@@ -1,0 +1,118 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Install ext archive into Freedom context dir
+ *
+ * @author Anakeen 2009
+ * @license http://www.fsf.org/licensing/licenses/agpl-3.0.html GNU Affero General Public License
+ */
+
+$WIFF_ROOT = getenv("WIFF_ROOT");
+if( $WIFF_ROOT === false ) {
+  print "WIFF_ROOT environment variable is not set!\n";
+  exit(1);
+}
+
+$WIFF_CONTEXT_ROOT = getenv("WIFF_CONTEXT_ROOT");
+if( $WIFF_CONTEXT_ROOT === false ) {
+  print "WIFF_CONTEXT_ROOT environment variable not set!\n";
+  exit(1);
+}
+
+set_include_path(get_include_path().PATH_SEPARATOR.$WIFF_CONTEXT_ROOT.PATH_SEPARATOR."$WIFF_ROOT/include");
+
+$ext_zip = $argv[1];
+if( $ext_zip === NULL ) {
+  print sprintf("Missing ext archive argument\n");
+  exit(1);
+}
+$ext_zip = realpath($ext_zip);
+if( ! is_file($ext_zip) ) {
+  print sprintf("ext archive not found at '%s'\n", $ext_zip);
+  exit(1);
+}
+
+if( ! is_dir(sprintf("%s/lib", $WIFF_CONTEXT_ROOT)) ) {
+  $ret = mkdir(sprintf("%s/lib", $WIFF_CONTEXT_ROOT));
+  if( $ret === false ) {
+    print sprintf("Could not create '%s/lib' directory\n", $WIFF_CONTEXT_ROOT);
+    exit(1);
+  }
+}
+
+$ret = chdir(sprintf("%s/lib", $WIFF_CONTEXT_ROOT));
+if( $ret === false ) {
+  print sprintf("Could not change directory to '%s/lib'\n", $WIFF_CONTEXT_ROOT);
+  exit(1);
+}
+
+$tmpfile = tempnam(null, 'ext_unzip');
+if( $tmpfile === false ) {
+  print sprintf("Could not create temporary file\n");
+  exit(1);
+}
+
+$tempdir = basename($tmpfile);
+$ret = mkdir($tempdir);
+if( $ret === false ) {
+  print sprintf("Could not create temporary directory '%s'\n", $tempdir);
+  @unlink($tmpfile);
+  exit(1);
+}
+
+// Unpack archive in tempdir
+$cmd = sprintf('%s -d "%s" "%s" 1> "%s" 2>&1', 'unzip', escapeshellcmd($tempdir), escapeshellcmd($ext_zip), escapeshellcmd($tmpfile));
+system($cmd, $ret);
+
+$output = file_get_contents($tmpfile);
+@unlink($tmpfile);
+
+if( $ret !== 0 ) {
+  print sprintf('Error unzip -d "%s" "%s"\n', $tempdir, escapeshellcmd($ext_zip));
+  exit(1);
+}
+
+// Search for a /ext-X.X.X/ subdir in the unpacked archive
+$fh = opendir($tempdir);
+if( $fh === false ) {
+  print sprintf("Error opening temporary directory '%s'\n", $tempdir);
+  exit(1);
+}
+
+$ext_subdir = false;
+while( ($file = readdir($fh)) !== false ) {
+  if( is_dir(sprintf("%s/%s", $tempdir, $file)) && preg_match("/^ext-\d+\.\d+\.\d+$/", $file) ) {
+    $ext_subdir = $file;
+    break;
+  }
+}
+if( $ext_subdir === false ) {
+  print sprintf("Could not find a valid ext subdir in '%s'\n", $tempdir);
+  exit(1);
+}
+
+// Create ext dir if it does not exists
+if( ! is_dir('ext') ) {
+  $ret = mkdir('ext');
+  if( $ret === false ) {
+    print sprintf("Could not create 'ext' directory in 'lib'\n");
+    exit(1);
+  }
+}
+
+// Copy new ext files over existing ext directory
+$cmd = sprintf('tar -C "%s/%s" -cf - . | tar -C "%s" -xf -', escapeshellcmd($tempdir), escapeshellcmd($ext_subdir), "ext");
+system($cmd, $ret);
+
+if( $ret !== 0 ) {
+  print sprintf('Error copying ext files (%s)\n', $cmd);
+  exit(1);
+}
+
+// Cleanup tempdir
+$cmd = sprintf('rm -Rf "%s"', escapeshellcmd($tempdir));
+system($cmd, $ret);
+
+exit(0);
+
+?>

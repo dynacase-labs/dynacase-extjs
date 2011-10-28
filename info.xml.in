@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<module name="dynacase-extjs" version="@VERSION@" release="@RELEASE@">
+  <description>Ext JS is a cross-browser JavaScript library for building rich internet applications.</description>
+  <replaces>
+        <module name="freedom-extjs" />
+  </replaces>
+
+  <parameters>
+    <param name="extjs_url" label="ExtJS download URL" type="text" default="http://ftp.dynacase.org/third-party/ext-3.1.1.zip" />
+  </parameters>
+
+  <pre-install>
+    <check type="syscommand" command="unzip" />
+    <check type="syscommand" command="tar" />
+  </pre-install>
+  
+  <pre-upgrade>
+    <check type="syscommand" command="unzip" />
+    <check type="syscommand" command="tar" />
+  </pre-upgrade>
+
+  <post-install>
+    <download href="@extjs_url" action="programs/extjs_install"><label lang="en">Download and install ExtJS</label></download>
+  </post-install>
+
+  <post-upgrade>
+    <download href="@extjs_url" action="programs/extjs_install"><label lang="en">Download and install ExtJS</label></download>
+  </post-upgrade>
+
+</module>

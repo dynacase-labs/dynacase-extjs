@@ -1,0 +1,36 @@
+PACKAGE = @PACKAGE@
+VERSION = @VERSION@
+utildir=@PUBRULE@
+appname = @APPNAME@
+pubdir = @prefix@
+srcdir = @srcdir@
+
+export pubdir utildir appname
+
+TAR = tar
+GZIP_ENV = --best
+
+export targetdir PACKAGE
+
+pages_not_xml = info.xml
+pages_not_php=fam2po.php po2js.php
+
+include $(utildir)/PubRule
+
+DISTFILES += $(SUBDIR) \
+            RELEASE VERSION 
+
+$(pubdir):
+	mkdir -p $@
+
+$(pubdir)/programs: $(pubdir)
+	mkdir -p $@
+
+$(pubdir)/programs/extjs_install: programs/extjs_install $(pubdir)/programs
+	cp $< $@
+	chmod a+x $@
+
+publish: $(pubdir)/programs/extjs_install
+
+distclean:
+	rm config.status config.log config.cache Makefile
