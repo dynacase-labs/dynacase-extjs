@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
-<module name="dynacase-extjs" version="@VERSION@" release="@RELEASE@">
+<module name="dynacase-extjs-installer" version="@VERSION@" release="@RELEASE@">
   <description>Ext JS is a cross-browser JavaScript library for building rich internet applications.</description>
+
   <replaces>
-        <module name="freedom-extjs" />
+    <module name="dynacase-extjs" />
   </replaces>
 
   <parameters>
