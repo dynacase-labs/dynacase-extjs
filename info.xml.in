@@ -7,7 +7,7 @@
   </replaces>
 
   <parameters>
-    <param name="extjs_url" label="ExtJS download URL" type="text" default="http://ftp.dynacase.org/third-party/ext-3.1.1.zip" />
+    <param name="extjs_url" label="ExtJS download URL" type="text" default="http://ftp.dynacase.org/third-party/ext-3.1.1.zip" volatile="yes" onupgrade="W" />
   </parameters>
 
   <pre-install>
