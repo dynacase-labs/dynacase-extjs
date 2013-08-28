@@ -30,7 +30,12 @@ $(pubdir)/programs/extjs_install: programs/extjs_install $(pubdir)/programs
 	cp $< $@
 	chmod a+x $@
 
-publish: $(pubdir)/programs/extjs_install
+$(pubdir)/.autoloader-ignore.d:
+	mkdir -p $@
+$(pubdir)/.autoloader-ignore.d/@PACKAGE@: autoloader-ignore-d $(pubdir)/.autoloader-ignore.d
+	cp $< $@
+
+publish: $(pubdir)/programs/extjs_install $(pubdir)/.autoloader-ignore.d/@PACKAGE@
 
 distclean:
 	rm config.status config.log config.cache Makefile
